@@ -1,0 +1,20 @@
+{
+  "objective": "",
+  "created_at": "",
+  "calls": [
+    {
+      "tool": "web_search",
+      "args": {
+        "query": ""
+      },
+      "stage": "evidence"
+    }
+  ],
+  "notes": [],
+  "policy": {
+    "max_calls": 12,
+    "require_validate_first": false,
+    "enforce_stage_progression": true,
+    "require_evidence_before_hypothesis": true
+  }
+}

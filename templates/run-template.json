@@ -1,0 +1,18 @@
+{
+  "objective": "",
+  "created_at": "",
+  "plan": {
+    "calls": []
+  },
+  "policy": {
+    "approved": false,
+    "errors": [],
+    "warnings": []
+  },
+  "evidence": [],
+  "promising_cures": [],
+  "interesting_targets": [],
+  "execution_log": [],
+  "references": [],
+  "next_actions": []
+}

@@ -177,13 +177,13 @@ interface Channel {
 
 Channels self-register using a barrel-import pattern:
 
-1. Each channel skill adds a file to `src/channels/` (e.g. `whatsapp.ts`, `telegram.ts`) that calls `registerChannel()` at module load time:
+1. Each channel skill adds a file to `src/channels/` (e.g. `local.ts`, `telegram.ts`) that calls `registerChannel()` at module load time:
 
    ```typescript
-   // src/channels/whatsapp.ts
+   // src/channels/local.ts
    import { registerChannel, ChannelOpts } from './registry.js';
 
-   export class WhatsAppChannel implements Channel { /* ... */ }
+   export class LocalChannel implements Channel { /* ... */ }
 
    registerChannel('whatsapp', (opts: ChannelOpts) => {
      // Return null if credentials are missing
@@ -264,7 +264,7 @@ nanoclaw/
 │   ├── db.ts                      # SQLite database initialization and queries
 │   ├── group-queue.ts             # Per-group queue with global concurrency limit
 │   ├── mount-security.ts          # Mount allowlist validation for containers
-│   ├── whatsapp-auth.ts           # Standalone WhatsApp authentication
+│   ├── channels/local.ts          # Local control channel for the main workspace
 │   ├── task-scheduler.ts          # Runs scheduled tasks when due
 │   └── container-runner.ts        # Spawns agents in containers
 │
@@ -305,7 +305,6 @@ nanoclaw/
 │       └── *.md                   # Files created by the agent
 │
 ├── store/                         # Local data (gitignored)
-│   ├── auth/                      # WhatsApp authentication state
 │   └── messages.db                # SQLite database (messages, chats, scheduled_tasks, task_run_logs, registered_groups, sessions, router_state)
 │
 ├── data/                          # Application state (gitignored)

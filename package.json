@@ -1,11 +1,39 @@
 {
-  "name": "nanoclaw",
+  "name": "nanocures",
   "version": "1.2.53",
-  "description": "Personal Claude assistant. Lightweight, secure, customizable.",
+  "description": "NanoClaw-based disease discovery assistant with secure campaign workflows.",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "nanocures": "tools/nanocures-cli.mjs"
+  },
+  "files": [
+    "dist/",
+    "src/**/*.ts",
+    "!src/**/*.test.ts",
+    "setup/**/*.ts",
+    "!setup/**/*.test.ts",
+    "container/",
+    "config-examples/",
+    "docs/FEATURE_MAPPING.md",
+    "docs/NANOCURES_SECURITY.md",
+    "groups/main/CLAUDE.md",
+    "groups/global/CLAUDE.md",
+    "launchd/com.nanocures.plist",
+    "scripts/",
+    "templates/",
+    "tools/",
+    ".env.example",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "README_ja.md",
+    "README_zh.md",
+    "setup.sh",
+    "tsconfig.json"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
@@ -13,8 +41,8 @@
     "format:fix": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "prepare": "husky",
+    "prepack": "npm run build",
     "setup": "tsx setup/index.ts",
-    "auth": "tsx src/whatsapp-auth.ts",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "test": "vitest run",
@@ -23,7 +51,8 @@
   "dependencies": {
     "@onecli-sh/sdk": "^0.2.0",
     "better-sqlite3": "11.10.0",
-    "cron-parser": "5.5.0"
+    "cron-parser": "5.5.0",
+    "tsx": "^4.19.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
@@ -34,7 +63,6 @@
     "globals": "^15.12.0",
     "husky": "^9.1.7",
     "prettier": "^3.8.1",
-    "tsx": "^4.19.0",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.35.0",
     "vitest": "^4.0.18"

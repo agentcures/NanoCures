@@ -247,13 +247,11 @@ ANTHROPIC_API_KEY=proxy-managed
 EOF
 mkdir -p data/env && cp .env data/env/env
 
-# Authenticate (choose one):
+# Authentication note
 
-# QR code — scan with WhatsApp camera:
-npx tsx src/whatsapp-auth.ts
-
-# OR pairing code — enter code in WhatsApp > Linked Devices > Link with phone number:
-npx tsx src/whatsapp-auth.ts --pairing-code --phone <phone-number-no-plus>
+# NanoCures does not ship the upstream WhatsApp auth/channel files.
+# Use the main local control group and NanoCures skills instead of the
+# deprecated WhatsApp bootstrap flow documented in older NanoClaw forks.
 
 # Register your chat (JID = your phone number + @s.whatsapp.net)
 npx tsx setup/index.ts --step register \
@@ -267,7 +265,7 @@ npx tsx setup/index.ts --step register \
   --no-trigger-required
 ```
 
-**Important:** The WhatsApp skill files (`src/channels/whatsapp.ts` and `src/whatsapp-auth.ts`) also need proxy patches — add `HttpsProxyAgent` for WebSocket connections and a proxy-aware version fetch. Then rebuild.
+**Important:** NanoCures does not include the upstream WhatsApp channel implementation, so these older proxy-patching instructions do not apply to this fork.
 
 ### Both Channels
 
@@ -350,10 +348,5 @@ Clone to a non-workspace path first, then move:
 cd ~ && git clone https://github.com/qwibitai/nanoclaw.git && mv nanoclaw /path/to/workspace/nanoclaw
 ```
 
-### WhatsApp QR code doesn't display
-Run the auth command interactively inside the sandbox (not piped through `docker sandbox exec`):
-```bash
-docker sandbox run shell-nanoclaw-workspace
-# Then inside:
-npx tsx src/whatsapp-auth.ts
-```
+### Older WhatsApp bootstrap steps no longer apply
+NanoCures does not ship the upstream WhatsApp auth flow. If you find older instructions that reference `src/whatsapp-auth.ts`, ignore them and use the local main-group setup described earlier in this document.

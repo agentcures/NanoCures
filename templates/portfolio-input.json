@@ -1,0 +1,13 @@
+{
+  "diseases": [
+    {
+      "name": "ischemic heart disease",
+      "burden": 0.95,
+      "tractability": 0.55,
+      "unmet_need": 0.72,
+      "translational_readiness": 0.81,
+      "novelty": 0.42,
+      "voi": 0.61
+    }
+  ]
+}
