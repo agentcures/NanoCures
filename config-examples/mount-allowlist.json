@@ -1,0 +1,28 @@
+{
+  "allowedRoots": [
+    {
+      "path": "~/research/public-literature",
+      "allowReadWrite": false,
+      "description": "Downloaded papers and public evidence packs"
+    },
+    {
+      "path": "~/research/datasets/nonphi",
+      "allowReadWrite": false,
+      "description": "Non-PHI datasets approved for agent review"
+    },
+    {
+      "path": "~/research/workspaces/nanocures",
+      "allowReadWrite": true,
+      "description": "Scratch workspace for generated analyses and drafts"
+    }
+  ],
+  "blockedPatterns": [
+    "password",
+    "secret",
+    "token",
+    "phi",
+    "patient",
+    "mrn"
+  ],
+  "nonMainReadOnly": true
+}
