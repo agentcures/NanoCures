@@ -1,8 +1,16 @@
 # Changelog
 
-All notable changes to NanoClaw will be documented in this file.
+All notable changes to NanoCures will be documented in this file.
 
-For detailed release notes, see the [full changelog on the documentation site](https://docs.nanoclaw.dev/changelog).
+NanoCures starts from NanoClaw upstream commit `a81e165` dated 2026-04-18. The historical NanoClaw release entries below are kept for fork lineage, but NanoCures versioning resets at `0.1.0`.
+
+## [0.1.0] - 2026-04-20
+
+- Reset versioning from upstream NanoClaw `1.2.53` to the first NanoCures release line.
+- Renamed the npm package, container image, launchd unit, and service identifiers from NanoClaw to NanoCures.
+- Added NanoCures-specific skills, templates, deterministic CLI helpers, and fork-specific operating docs.
+- Added local main-channel support plus stricter Remote Control sender and chat ownership checks.
+- Tightened the release surface by removing setup telemetry, redacting container failure logs by default, and packaging only publishable assets.
 
 ## [1.2.36] - 2026-03-26
 
