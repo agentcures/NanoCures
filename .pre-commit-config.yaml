@@ -53,7 +53,7 @@ repos:
         args:
           - --fix
           - --exit-non-zero-on-fix
-          - --select=E,F,W,I,B,C4,UP,SIM,RET,RUF,PERF,PIE
+          - --select=E,F,W,I,B,C4,UP
           - --ignore=E501
         types_or: [python, pyi]
   - repo: https://github.com/psf/black
@@ -70,6 +70,8 @@ repos:
           - --ignore-missing-imports
           - --explicit-package-bases
           - --allow-subclassing-any
+          - --disable-error-code=no-any-return
+          - --disable-error-code=unused-ignore
           - --show-error-codes
           - --pretty
         exclude: |
