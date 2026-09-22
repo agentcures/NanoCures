@@ -6,6 +6,7 @@ import { ASSISTANT_NAME, DATA_DIR, STORE_DIR } from './config.js';
 import { isValidGroupFolder } from './group-folder.js';
 import { logger } from './logger.js';
 import {
+  ContainerConfig,
   NewMessage,
   RegisteredGroup,
   ScheduledTask,
@@ -141,7 +142,10 @@ function createSchema(database: Database.Database): void {
       `UPDATE chats SET channel = 'discord', is_group = 1 WHERE jid LIKE 'dc:%'`,
     );
     database.exec(
-      `UPDATE chats SET channel = 'telegram', is_group = 0 WHERE jid LIKE 'tg:%'`,
+      `UPDATE chats SET channel = 'telegram', is_group = 1 WHERE jid LIKE 'tg:-%'`,
+    );
+    database.exec(
+      `UPDATE chats SET channel = 'telegram', is_group = 0 WHERE jid LIKE 'tg:%' AND jid NOT LIKE 'tg:-%'`,
     );
   } catch {
     /* columns already exist */
@@ -164,6 +168,8 @@ export function initDatabase(): void {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
   db = new Database(dbPath);
+  db.pragma('journal_mode = WAL');
+  db.pragma('busy_timeout = 5000');
   createSchema(db);
 
   // Migrate from JSON files if they exist
@@ -519,15 +525,31 @@ export function updateTaskAfterRun(
   id: string,
   nextRun: string | null,
   lastResult: string,
+  options?: { failed?: boolean },
 ): void {
   const now = new Date().toISOString();
+  const failed = options?.failed === true;
+  // A one-shot task has no next_run. Mark it completed only when the run
+  // succeeded; a failure stays paused so it is not reported as finished.
+  const terminalStatus =
+    nextRun === null ? (failed ? 'paused' : 'completed') : null;
+  if (terminalStatus === null) {
+    db.prepare(
+      `
+      UPDATE scheduled_tasks
+      SET next_run = ?, last_run = ?, last_result = ?
+      WHERE id = ?
+    `,
+    ).run(nextRun, now, lastResult, id);
+    return;
+  }
   db.prepare(
     `
     UPDATE scheduled_tasks
-    SET next_run = ?, last_run = ?, last_result = ?, status = CASE WHEN ? IS NULL THEN 'completed' ELSE status END
+    SET next_run = ?, last_run = ?, last_result = ?, status = ?
     WHERE id = ?
   `,
-  ).run(nextRun, now, lastResult, nextRun, id);
+  ).run(nextRun, now, lastResult, terminalStatus, id);
 }
 
 export function logTaskRun(log: TaskRunLog): void {
@@ -591,6 +613,19 @@ export function getAllSessions(): Record<string, string> {
   return result;
 }
 
+function parseContainerConfig(raw: string | null): ContainerConfig | undefined {
+  if (!raw) return undefined;
+  try {
+    return JSON.parse(raw) as ContainerConfig;
+  } catch (err) {
+    logger.warn(
+      { err },
+      'Invalid container_config JSON; ignoring container settings',
+    );
+    return undefined;
+  }
+}
+
 // --- Registered group accessors ---
 
 export function getRegisteredGroup(
@@ -624,9 +659,7 @@ export function getRegisteredGroup(
     folder: row.folder,
     trigger: row.trigger_pattern,
     added_at: row.added_at,
-    containerConfig: row.container_config
-      ? JSON.parse(row.container_config)
-      : undefined,
+    containerConfig: parseContainerConfig(row.container_config),
     requiresTrigger:
       row.requires_trigger === null ? undefined : row.requires_trigger === 1,
     isMain: row.is_main === 1 ? true : undefined,
@@ -677,9 +710,7 @@ export function getAllRegisteredGroups(): Record<string, RegisteredGroup> {
       folder: row.folder,
       trigger: row.trigger_pattern,
       added_at: row.added_at,
-      containerConfig: row.container_config
-        ? JSON.parse(row.container_config)
-        : undefined,
+      containerConfig: parseContainerConfig(row.container_config),
       requiresTrigger:
         row.requires_trigger === null ? undefined : row.requires_trigger === 1,
       isMain: row.is_main === 1 ? true : undefined,

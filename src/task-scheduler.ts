@@ -237,7 +237,9 @@ async function runTask(
     : result
       ? result.slice(0, 200)
       : 'Completed';
-  updateTaskAfterRun(task.id, nextRun, resultSummary);
+  updateTaskAfterRun(task.id, nextRun, resultSummary, {
+    failed: Boolean(error),
+  });
 }
 
 let schedulerRunning = false;

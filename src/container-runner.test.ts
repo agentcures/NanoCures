@@ -312,4 +312,28 @@ describe('container-runner timeout behavior', () => {
     expect(logBody).toContain('super-secret-value');
     expect(logBody).toContain('/tmp/nanoclaw-test-groups/test-group');
   });
+
+  it('resolves when the output callback throws', async () => {
+    const onOutput = vi.fn(async () => {
+      throw new Error('send failed');
+    });
+    const resultPromise = runContainerAgent(
+      testGroup,
+      testInput,
+      () => {},
+      onOutput,
+    );
+
+    emitOutputMarker(fakeProc, {
+      status: 'success',
+      result: 'Done',
+    });
+    await vi.advanceTimersByTimeAsync(10);
+    fakeProc.emit('close', 0);
+    await vi.advanceTimersByTimeAsync(10);
+
+    const result = await resultPromise;
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('send failed');
+  });
 });

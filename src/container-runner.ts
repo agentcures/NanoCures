@@ -478,7 +478,16 @@ export async function runContainerAgent(
             resetTimeout();
             // Call onOutput for all markers (including null results)
             // so idle timers start even for "silent" query completions.
-            outputChain = outputChain.then(() => onOutput(parsed));
+            outputChain = outputChain
+              .then(() => onOutput(parsed))
+              .catch((err) => {
+                logger.error(
+                  { group: group.name, err },
+                  'onOutput callback failed',
+                );
+                streamedError ??=
+                  err instanceof Error ? err.message : String(err);
+              });
           } catch (err) {
             logger.warn(
               { group: group.name, error: err },
@@ -696,30 +705,32 @@ export async function runContainerAgent(
 
       // Streaming mode: wait for output chain to settle, return completion marker
       if (onOutput) {
-        outputChain.then(() => {
-          if (streamedError) {
-            logger.error(
-              { group: group.name, duration, error: streamedError },
-              'Container completed with streamed error',
+        outputChain
+          .catch(() => undefined)
+          .then(() => {
+            if (streamedError) {
+              logger.error(
+                { group: group.name, duration, error: streamedError },
+                'Container completed with streamed error',
+              );
+              resolve({
+                status: 'error',
+                result: null,
+                error: streamedError,
+              });
+              return;
+            }
+
+            logger.info(
+              { group: group.name, duration, newSessionId },
+              'Container completed (streaming mode)',
             );
             resolve({
-              status: 'error',
+              status: 'success',
               result: null,
-              error: streamedError,
+              newSessionId,
             });
-            return;
-          }
-
-          logger.info(
-            { group: group.name, duration, newSessionId },
-            'Container completed (streaming mode)',
-          );
-          resolve({
-            status: 'success',
-            result: null,
-            newSessionId,
           });
-        });
         return;
       }
 

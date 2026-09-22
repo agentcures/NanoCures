@@ -555,6 +555,35 @@ describe('schedule_task schedule types', () => {
 
     expect(getAllTasks()).toHaveLength(0);
   });
+
+  it('recomputes next_run when a once task is rescheduled', async () => {
+    await processTaskIpc(
+      {
+        type: 'schedule_task',
+        prompt: 'once task',
+        schedule_type: 'once',
+        schedule_value: '2025-06-01T00:00:00.000Z',
+        targetJid: 'other@g.us',
+      },
+      'whatsapp_main',
+      true,
+      deps,
+    );
+    const created = getAllTasks()[0];
+
+    await processTaskIpc(
+      {
+        type: 'update_task',
+        taskId: created.id,
+        schedule_value: '2026-01-02T03:04:05.000Z',
+      },
+      'whatsapp_main',
+      true,
+      deps,
+    );
+
+    expect(getTaskById(created.id)?.next_run).toBe('2026-01-02T03:04:05.000Z');
+  });
 });
 
 // --- context_mode defaulting ---

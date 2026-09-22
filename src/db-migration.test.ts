@@ -5,7 +5,7 @@ import path from 'path';
 import { describe, expect, it, vi } from 'vitest';
 
 describe('database migrations', () => {
-  it('defaults Telegram backfill chats to direct messages', async () => {
+  it('backfills Telegram groups separately from direct messages', async () => {
     const repoRoot = process.cwd();
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nanoclaw-db-test-'));
 
@@ -52,12 +52,16 @@ describe('database migrations', () => {
       });
       expect(chats.find((chat) => chat.jid === 'tg:-10012345')).toMatchObject({
         channel: 'telegram',
-        is_group: 0,
+        is_group: 1,
       });
       expect(chats.find((chat) => chat.jid === 'room@g.us')).toMatchObject({
         channel: 'whatsapp',
         is_group: 1,
       });
+
+      const probe = new Database(dbPath, { fileMustExist: true });
+      expect(probe.pragma('journal_mode', { simple: true })).toBe('wal');
+      probe.close();
 
       _closeDatabase();
     } finally {

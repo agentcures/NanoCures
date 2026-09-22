@@ -14,6 +14,7 @@ import {
   storeChatMetadata,
   storeMessage,
   updateTask,
+  updateTaskAfterRun,
 } from './db.js';
 import { formatMessages } from './router.js';
 
@@ -648,5 +649,67 @@ describe('registered group isMain', () => {
     const group = groups['group@g.us'];
     expect(group).toBeDefined();
     expect(group.isMain).toBeUndefined();
+  });
+});
+
+describe('updateTaskAfterRun', () => {
+  it('completes a successful one-shot task', () => {
+    createTask({
+      id: 'once-ok',
+      group_folder: 'main',
+      chat_jid: 'group@g.us',
+      prompt: 'once',
+      schedule_type: 'once',
+      schedule_value: '2024-06-01T00:00:00.000Z',
+      context_mode: 'isolated',
+      next_run: '2024-06-01T00:00:00.000Z',
+      status: 'active',
+      created_at: '2024-01-01T00:00:00.000Z',
+    });
+
+    updateTaskAfterRun('once-ok', null, 'Completed');
+    expect(getTaskById('once-ok')?.status).toBe('completed');
+  });
+
+  it('pauses a failed one-shot task instead of marking it completed', () => {
+    createTask({
+      id: 'once-fail',
+      group_folder: 'main',
+      chat_jid: 'group@g.us',
+      prompt: 'once',
+      schedule_type: 'once',
+      schedule_value: '2024-06-01T00:00:00.000Z',
+      context_mode: 'isolated',
+      next_run: '2024-06-01T00:00:00.000Z',
+      status: 'active',
+      created_at: '2024-01-01T00:00:00.000Z',
+    });
+
+    updateTaskAfterRun('once-fail', null, 'Error: boom', { failed: true });
+    const task = getTaskById('once-fail');
+    expect(task?.status).toBe('paused');
+    expect(task?.last_result).toBe('Error: boom');
+  });
+
+  it('keeps a recurring task active after a failed run', () => {
+    createTask({
+      id: 'cron-fail',
+      group_folder: 'main',
+      chat_jid: 'group@g.us',
+      prompt: 'cron',
+      schedule_type: 'cron',
+      schedule_value: '0 9 * * *',
+      context_mode: 'isolated',
+      next_run: '2024-06-01T00:00:00.000Z',
+      status: 'active',
+      created_at: '2024-01-01T00:00:00.000Z',
+    });
+
+    updateTaskAfterRun('cron-fail', '2024-06-02T09:00:00.000Z', 'Error: boom', {
+      failed: true,
+    });
+    const task = getTaskById('cron-fail');
+    expect(task?.status).toBe('active');
+    expect(task?.next_run).toBe('2024-06-02T09:00:00.000Z');
   });
 });
